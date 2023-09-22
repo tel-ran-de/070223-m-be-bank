@@ -1,13 +1,22 @@
 package de.telran.telranbank.customer;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Objects;
 
 public class CustomerJson {
 
+    @NotBlank
     private final String login;
+    @NotBlank
     private final String address;
+    @NotBlank
     private final String firstName;
+    @NotBlank
     private final String lastName;
+    @Email
+    @AllowedDomains
     private final String email;
 
     public CustomerJson(String login, String address, String firstName, String lastName, String email) {

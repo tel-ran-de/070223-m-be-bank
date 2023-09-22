@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface CustomerEntityRepository extends CrudRepository<CustomerEntity, Long> {
 
     Optional<CustomerEntity> findByLogin(String login);
+
+    void deleteByLogin(String login);
 }
