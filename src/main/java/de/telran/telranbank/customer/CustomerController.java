@@ -1,6 +1,7 @@
 package de.telran.telranbank.customer;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,10 +10,10 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
 
     @Autowired
-    private CustomerStorage customerStorage;
+    private CustomerManagementService customerStorage;
 
     @RequestMapping(value = "/customer", method = RequestMethod.POST)
-    public ResponseEntity<Void> createCustomer(@RequestBody CustomerJson customerJson, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Void> createCustomer(@RequestBody @Valid CustomerJson customerJson, HttpServletRequest httpServletRequest) {
         if (customerJson.getLogin() == null) {
             return ResponseEntity.status(400).body(null);
         }
@@ -26,5 +27,12 @@ public class CustomerController {
         CustomerEntity customerEntity = customerStorage.get(login);
         return ResponseEntity.ok(new CustomerJson(customerEntity.getLogin(), customerEntity.getAddress(),
                 customerEntity.getFirstName(), customerEntity.getLastName(), customerEntity.getEmail()));
+    }
+
+    @RequestMapping(value = "/customer/{login}", method = RequestMethod.DELETE)
+    public void deleteCustomer(@PathVariable("login") String login) {
+        customerStorage.delete(login);
+
+
     }
 }
