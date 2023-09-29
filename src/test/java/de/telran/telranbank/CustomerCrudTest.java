@@ -10,10 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,18 +34,20 @@ public class CustomerCrudTest {
     private CustomerEntityRepository customerEntityRepository;
 
     @Test
+    @WithMockUser
     public void shouldCreateAccount() throws Exception {
         // given
         CustomerJson customerJson = new CustomerJson("antonermak",
                 "Thailand",
                 "Anton",
                 "Ermak",
-                "antonermak@telran.de");
+                "antonermak@gmail.com");
 
         String customerStr = objectMapper.writeValueAsString(customerJson);
 
         // when
         MvcResult accountCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(customerStr))
                 .andReturn();
@@ -63,6 +68,7 @@ public class CustomerCrudTest {
 
     //
     @Test
+    @WithMockUser
     public void shouldDeleteCustomer() throws Exception {
         // given
         customerEntityRepository.save(new CustomerEntity("superman", "Some Address",
@@ -70,7 +76,9 @@ public class CustomerCrudTest {
 
 
         // when
-        MvcResult customerDeleteResult = mockMvc.perform(MockMvcRequestBuilders.delete("/customer/superman"))
+        MvcResult customerDeleteResult = mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/customer/superman")
+                        .with(csrf()))
                 .andReturn();
 
 
@@ -80,6 +88,7 @@ public class CustomerCrudTest {
     }
 
     @Test
+    @WithMockUser
     public void shouldDiscardInvalidCustomer() throws Exception {
         // given
         CustomerJson customerJson = new CustomerJson("antonermak",
@@ -92,6 +101,7 @@ public class CustomerCrudTest {
 
         // when
         MvcResult customerCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(customerStr))
                 .andReturn();
