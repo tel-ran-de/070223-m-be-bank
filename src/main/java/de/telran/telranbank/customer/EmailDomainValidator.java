@@ -6,7 +6,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.Set;
 
 public class EmailDomainValidator implements ConstraintValidator<AllowedDomains, String> {
-    private static final Set<String> allowedDomains = Set.of("gmail.com", "yahoo.com");
+    private static final Set<String> allowedDomains = Set.of("gmail.com", "yahoo.com", "telran.de");
 
     @Override
     public void initialize(AllowedDomains constraintAnnotation) {

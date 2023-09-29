@@ -10,10 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,56 +34,8 @@ public class CustomerCrudTest {
     private CustomerEntityRepository customerEntityRepository;
 
     @Test
-    public void shouldCreateAccount() throws Exception {
-        // given
-        CustomerJson customerJson = new CustomerJson("antonermak",
-                "Thailand",
-                "Anton",
-                "Ermak",
-                "antonermak@telran.de");
-
-        String customerStr = objectMapper.writeValueAsString(customerJson);
-
-        // when
-        MvcResult accountCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(customerStr))
-                .andReturn();
-
-        MvcResult accountGetResult = mockMvc.perform(MockMvcRequestBuilders.get("/customer/" +
-                        customerJson.getLogin()))
-                .andReturn();
-
-        // then
-        Assertions.assertEquals(200, accountCreationResult.getResponse().getStatus());
-        Assertions.assertEquals(200, accountGetResult.getResponse().getStatus());
-
-        String accountGetStringJson = accountGetResult.getResponse().getContentAsString();
-        CustomerJson receivedCustomerJson = objectMapper.readValue(accountGetStringJson, CustomerJson.class);
-
-        Assertions.assertEquals(customerJson, receivedCustomerJson);
-    }
-
-    //
-    @Test
-    public void shouldDeleteCustomer() throws Exception {
-        // given
-        customerEntityRepository.save(new CustomerEntity("superman", "Some Address",
-                "Ivan", "Petrov", "ivan@gmail.com"));
-
-
-        // when
-        MvcResult customerDeleteResult = mockMvc.perform(MockMvcRequestBuilders.delete("/customer/superman"))
-                .andReturn();
-
-
-        // then
-        Assertions.assertEquals(200, customerDeleteResult.getResponse().getStatus());
-        Assertions.assertFalse(customerEntityRepository.findByLogin("superman").isPresent());
-    }
-
-    @Test
-    public void shouldDiscardInvalidCustomer() throws Exception {
+    @WithMockUser
+    public void shouldCreateCustomer() throws Exception {
         // given
         CustomerJson customerJson = new CustomerJson("antonermak",
                 "Thailand",
@@ -92,6 +47,64 @@ public class CustomerCrudTest {
 
         // when
         MvcResult customerCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        //.with(httpBasic("user", "password"))
+                        .with(csrf())
+                        .content(customerStr))
+                .andReturn();
+
+        MvcResult customerGetResult = mockMvc
+                .perform(MockMvcRequestBuilders.get("/customer/" + customerJson.getLogin())
+                        //.with(httpBasic("user", "password"))
+                )
+                .andReturn();
+
+        // then
+        Assertions.assertEquals(200, customerCreationResult.getResponse().getStatus());
+        Assertions.assertEquals(200, customerGetResult.getResponse().getStatus());
+
+        String customerGetStringJson = customerGetResult.getResponse().getContentAsString();
+        CustomerJson receivedCustomerJson = objectMapper.readValue(customerGetStringJson, CustomerJson.class);
+
+        Assertions.assertEquals(customerJson, receivedCustomerJson);
+    }
+
+    //
+    @Test
+    @WithMockUser
+    public void shouldDeleteCustomer() throws Exception {
+        // given
+        customerEntityRepository.save(new CustomerEntity("superman", "Some Address",
+                "Ivan", "Petrov", "ivan@gmail.com"));
+
+
+        // when
+        MvcResult customerDeleteResult = mockMvc.perform(
+                MockMvcRequestBuilders.delete("/customer/superman")
+                .with(csrf()))
+                .andReturn();
+
+
+        // then
+        Assertions.assertEquals(200, customerDeleteResult.getResponse().getStatus());
+        Assertions.assertFalse(customerEntityRepository.findByLogin("superman").isPresent());
+    }
+
+    @Test
+    @WithMockUser
+    public void shouldDiscardInvalidCustomer() throws Exception {
+        // given
+        CustomerJson customerJson = new CustomerJson("antonermak",
+                "Thailand",
+                "Anton",
+                "Ermak",
+                "antonermak@telrann.de");
+
+        String customerStr = objectMapper.writeValueAsString(customerJson);
+
+        // when
+        MvcResult customerCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(customerStr))
                 .andReturn();
