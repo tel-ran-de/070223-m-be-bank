@@ -1,10 +1,11 @@
 package de.telran.telranbank.customer;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 public class CustomerController {
@@ -13,7 +14,8 @@ public class CustomerController {
     private CustomerManagementService customerStorage;
 
     @RequestMapping(value = "/customer", method = RequestMethod.POST)
-    public ResponseEntity<Void> createCustomer(@RequestBody @Valid CustomerJson customerJson, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Void> createCustomer(@RequestBody @Valid CustomerJson customerJson,
+                                               Principal principal) {
         if (customerJson.getLogin() == null) {
             return ResponseEntity.status(400).body(null);
         }

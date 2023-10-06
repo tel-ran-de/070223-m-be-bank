@@ -41,7 +41,7 @@ public class CustomerCrudTest {
                 "Thailand",
                 "Anton",
                 "Ermak",
-                "antonermak@telran.de");
+                "antonermak@gmail.com");
 
         String customerStr = objectMapper.writeValueAsString(customerJson);
 
@@ -80,8 +80,8 @@ public class CustomerCrudTest {
 
         // when
         MvcResult customerDeleteResult = mockMvc.perform(
-                MockMvcRequestBuilders.delete("/customer/superman")
-                .with(csrf()))
+                        MockMvcRequestBuilders.delete("/customer/superman")
+                                .with(csrf()))
                 .andReturn();
 
 
