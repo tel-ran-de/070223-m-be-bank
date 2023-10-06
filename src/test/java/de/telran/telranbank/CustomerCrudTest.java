@@ -35,7 +35,7 @@ public class CustomerCrudTest {
 
     @Test
     @WithMockUser
-    public void shouldCreateAccount() throws Exception {
+    public void shouldCreateCustomer() throws Exception {
         // given
         CustomerJson customerJson = new CustomerJson("antonermak",
                 "Thailand",
@@ -46,22 +46,25 @@ public class CustomerCrudTest {
         String customerStr = objectMapper.writeValueAsString(customerJson);
 
         // when
-        MvcResult accountCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
-                        .with(csrf())
+        MvcResult customerCreationResult = mockMvc.perform(MockMvcRequestBuilders.post("/customer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        //.with(httpBasic("user", "password"))
+                        .with(csrf())
                         .content(customerStr))
                 .andReturn();
 
-        MvcResult accountGetResult = mockMvc.perform(MockMvcRequestBuilders.get("/customer/" +
-                        customerJson.getLogin()))
+        MvcResult customerGetResult = mockMvc
+                .perform(MockMvcRequestBuilders.get("/customer/" + customerJson.getLogin())
+                        //.with(httpBasic("user", "password"))
+                )
                 .andReturn();
 
         // then
-        Assertions.assertEquals(200, accountCreationResult.getResponse().getStatus());
-        Assertions.assertEquals(200, accountGetResult.getResponse().getStatus());
+        Assertions.assertEquals(200, customerCreationResult.getResponse().getStatus());
+        Assertions.assertEquals(200, customerGetResult.getResponse().getStatus());
 
-        String accountGetStringJson = accountGetResult.getResponse().getContentAsString();
-        CustomerJson receivedCustomerJson = objectMapper.readValue(accountGetStringJson, CustomerJson.class);
+        String customerGetStringJson = customerGetResult.getResponse().getContentAsString();
+        CustomerJson receivedCustomerJson = objectMapper.readValue(customerGetStringJson, CustomerJson.class);
 
         Assertions.assertEquals(customerJson, receivedCustomerJson);
     }
@@ -76,9 +79,9 @@ public class CustomerCrudTest {
 
 
         // when
-        MvcResult customerDeleteResult = mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/customer/superman")
-                        .with(csrf()))
+        MvcResult customerDeleteResult = mockMvc.perform(
+                        MockMvcRequestBuilders.delete("/customer/superman")
+                                .with(csrf()))
                 .andReturn();
 
 
@@ -95,7 +98,7 @@ public class CustomerCrudTest {
                 "Thailand",
                 "Anton",
                 "Ermak",
-                "antonermak@telran.de");
+                "antonermak@telrann.de");
 
         String customerStr = objectMapper.writeValueAsString(customerJson);
 
